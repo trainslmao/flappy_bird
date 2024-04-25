@@ -8,14 +8,14 @@ class Bird(pygame.sprite.Sprite):
 
     # class variables
     COLOR = (0, 0, 0)
-    JUMP_HEIGHT = -6
-    SIZE = 30
+    JUMP_HEIGHT = -5
+    SIZE = 50
     GRAVITY = 0.2
 
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, self.SIZE, self.SIZE)
         self.y_velocity = 0
-        self.image = pygame.image.load("images/flappybird.jpg")
+        self.image = pygame.image.load("flappy_bird/images/flappybird.png")
         self.mask = None
     
     def jump(self):
@@ -26,7 +26,7 @@ class Bird(pygame.sprite.Sprite):
         self.y_velocity += self.GRAVITY
 
     def draw(self, window):
-        pygame.draw.rect(window, self.COLOR, self.rect)
+        window.blit(self.image, (self.rect.x, self.rect.y))
 
     def getYValue(self):
         return self.rect.y
@@ -93,7 +93,7 @@ def main():
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and cooldown == 0 and bird.getYValue() > 0 and game == True:
+                if event.key == pygame.K_SPACE and cooldown == 0 and game == True:
                     if start != True:
                         bird.jump()
                         start = True
@@ -105,22 +105,25 @@ def main():
         
         window.fill(COLOR)  
 
-        # check game conditions
-        if start:
-            bird.fall()
 
-        if bird.getYValue() < 0:
-            bird.setYValue(0)
+
+        if bird.getYValue() < -25:
+            bird.setYValue(-25)
         
         if bird.getYValue() > WINDOW_HEIGHT:
-            bird.setYValue(WINDOW_HEIGHT - 10)
+            bird.setYValue(WINDOW_HEIGHT - 20)
             font = pygame.font.SysFont("Comic Sans MS", 50)
             text_surface = font.render('GAME OVER', False, (255, 0, 0))
             window.blit(text_surface, (WINDOW_LENGTH / 3, WINDOW_HEIGHT / 2.5))
 
-        #pipe.draw(window)
+        # pipe.draw(window)
         bird.draw(window)
+        # check game conditions
+        if start and bird.getYValue() < WINDOW_HEIGHT - 50:
+            print("e")
+            bird.fall()
 
+        
         pygame.display.update()
 
         if cooldown > 0 :
