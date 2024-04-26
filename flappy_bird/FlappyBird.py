@@ -105,27 +105,34 @@ def main():
     global PIPE_COOLDOWN
     global JUMP_COOLDOWN
 
+    # initalize pygame stuff
+    pygame.init()
+    pygame.font.init()
+    clock = pygame.time.Clock()
+
     # initalize variables
     cooldown = 0
     game = False
     obstacles = []
     pipe_cool = 0
     jumping = True
-
-    pygame.init()
-    pygame.font.init()
+    score = 0
+    scoreFont = pygame.font.SysFont("Comic Sans MS", 20)
 
     pygame.display.set_caption("flappy bird")
 
+    # create bird
     bird = Bird(50, 150)
     
+    # create window
     window = pygame.display.set_mode((WINDOW_LENGTH, WINDOW_HEIGHT))
 
-    clock = pygame.time.Clock()
     while True:
+        # update screen and make 60 fps
         clock.tick(60)
         window.fill(COLOR)  
-        
+    
+        # check events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -177,18 +184,19 @@ def main():
         removed = 0
         for indx in removePipe:
             obstacles.pop(indx - removed)
+            score += 1
             removed += 1
 
         # bird stuff
 
-        # check if bird is valid
+        # check if bird is is in game
         if bird.getYValue() < 0:
             bird.setYValue(0)
         
         if bird.getYValue() >= WINDOW_HEIGHT - 10:
             bird.setYValue(WINDOW_HEIGHT - 10)
-            font = pygame.font.SysFont("Comic Sans MS", 50)
-            text_surface = font.render('GAME OVER', False, (255, 0, 0))
+            gameOverFont = pygame.font.SysFont("Comic Sans MS", 50)
+            text_surface = gameOverFont.render('GAME OVER', False, (255, 0, 0))
             window.blit(text_surface, (WINDOW_LENGTH / 3, WINDOW_HEIGHT / 2.5))
             game = False
 
@@ -199,6 +207,11 @@ def main():
         # draw stuff
         bird.draw(window)
         
+        # display font
+        stringScore = str(score)
+        textScore = scoreFont.render("score: " + stringScore, 1, (125, 125, 125))
+        window.blit(textScore, (0, 0))
+
         pygame.display.update()
 
         if cooldown > 0 :
