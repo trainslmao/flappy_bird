@@ -10,6 +10,7 @@ COLOR = (255, 255, 255)
 WINDOW_HEIGHT = 480
 WINDOW_LENGTH = 780
 JUMP_COOLDOWN = 1
+PIPE_COOLDOWN = 86
 
 
 
@@ -58,13 +59,15 @@ class Pipes(pygame.sprite.Sprite):
 
     # class variables
     COLOR = (0, 225, 0)
-    GAP = 100
+    GAP = 140
     WIDTH = 50
-    HEIGHT = random.randrange(50, 590)
-    SPEED = 5
+    HEIGHT = 0
+    SPEED = 3
 
 
     def __init__(self):
+        self.HEIGHT = random.randrange(self.GAP + 10, WINDOW_HEIGHT - self.GAP - 10)
+
         self.rectTop = pygame.Rect(WINDOW_LENGTH - 5, 0, self.WIDTH, self.HEIGHT)
         self.rectBottom = pygame.Rect(WINDOW_LENGTH - 5, 0 + self.HEIGHT + self.GAP, self.WIDTH, 480 - self.HEIGHT)
         self.mask = None
@@ -76,9 +79,6 @@ class Pipes(pygame.sprite.Sprite):
     def move(self):
         self.rectTop.x -= self.SPEED
         self.rectBottom.x -= self.SPEED
-    
-    def kill(self) -> None:
-        return super().kill()
     
     def getXVal(self):
         return self.rectTop.x
@@ -95,12 +95,14 @@ def main():
     global WINDOW_HEIGHT
     global WINDOW_LENGTH
     global WINDOW_LENGTH
+    global PIPE_COOLDOWN
+    global JUMP_COOLDOWN
 
     # initalize variables
     cooldown = 0
-    start = False
-    game = True
+    game = False
     obstacles = []
+    pipe_cool = 0
 
     pygame.init()
     pygame.font.init()
@@ -124,10 +126,11 @@ def main():
                 sys.exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and cooldown == 0 and game == True:
-                    if start != True:
+                if event.key == pygame.K_SPACE and cooldown == 0:
+                    if game == False:
                         bird.jump()
-                        start = True
+                        game = True
+                        print(game)
                         cooldown = JUMP_COOLDOWN
                     
                     else:
@@ -138,20 +141,22 @@ def main():
 
         # pipe stuff
         # add pipe
-        if len(obstacles) < 3:
-            print("here")
+        if len(obstacles) < 3 and game and pipe_cool <= 0:
             pipes = Pipes()
             obstacles.append(pipes)
+            pipe_cool = PIPE_COOLDOWN
+
+        pipe_cool -= 1
 
         # iterate through all pipes
         for pipe in obstacles:
             # check if out of bounds
             if pipe.getXVal() < 0:
-                pipe.kill()
-
+                obstacles.remove(pipe)
             # draw and move the pipe
-            pipe.move()
-            pipe.draw(window)
+            if game:
+                pipe.move()
+                pipe.draw(window)
 
 
         # bird stuff
@@ -165,12 +170,13 @@ def main():
             font = pygame.font.SysFont("Comic Sans MS", 50)
             text_surface = font.render('GAME OVER', False, (255, 0, 0))
             window.blit(text_surface, (WINDOW_LENGTH / 3, WINDOW_HEIGHT / 2.5))
+            game = False
 
         # pipe.draw(window)
         bird.draw(window)
 
         # check if game has started conditions
-        if start and bird.getYValue() < WINDOW_HEIGHT - 50:
+        if game and bird.getYValue() < WINDOW_HEIGHT - 50:
             bird.fall()
 
         
