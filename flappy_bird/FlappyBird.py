@@ -176,11 +176,11 @@ def main():
         # bird stuff
 
         # check if bird is valid
-        if bird.getYValue() < -25:
-            bird.setYValue(-25)
+        if bird.getYValue() < 0:
+            bird.setYValue(0)
         
-        if bird.getYValue() > WINDOW_HEIGHT - 50:
-            bird.setYValue(WINDOW_HEIGHT - 20)
+        if bird.getYValue() >= WINDOW_HEIGHT - 10:
+            bird.setYValue(WINDOW_HEIGHT - 10)
             font = pygame.font.SysFont("Comic Sans MS", 50)
             text_surface = font.render('GAME OVER', False, (255, 0, 0))
             window.blit(text_surface, (WINDOW_LENGTH / 3, WINDOW_HEIGHT / 2.5))
@@ -190,7 +190,7 @@ def main():
         bird.draw(window)
 
         # check if game has started conditions
-        if game and bird.getYValue() < WINDOW_HEIGHT - 50:
+        if game and bird.getYValue() < WINDOW_HEIGHT - 10:
             bird.fall()
 
         
