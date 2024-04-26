@@ -18,13 +18,13 @@ class Bird(pygame.sprite.Sprite):
     # class variables
     COLOR = (0, 255, 12)
     JUMP_HEIGHT = -5
-    SIZE = 20
+    SIZE = 15
     GRAVITY = 0.2
 
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, self.SIZE, self.SIZE)
         self.y_velocity = 0
-        #self.image = pygame.image.load("flappy_bird/images/flappybird.png")
+        self.image = pygame.image.load("flappy_bird/images/flappybird.png")
         self.mask = None
     
     def jump(self):
@@ -35,8 +35,8 @@ class Bird(pygame.sprite.Sprite):
         self.y_velocity += self.GRAVITY
 
     def draw(self, window):
-        #window.blit(self.image, (self.rect.x, self.rect.y))
-        pygame.draw.rect(window, self.COLOR, self.rect)
+        window.blit(self.image, (self.rect.x - 10, self.rect.y - 5))
+        #pygame.draw.rect(window, self.COLOR, self.rect)
 
     def getYValue(self):
         return self.rect.y
@@ -70,8 +70,7 @@ class Pipes(pygame.sprite.Sprite):
 
 
     def __init__(self):
-        self.HEIGHT = random.randrange(self.GAP + 10, WINDOW_HEIGHT - self.GAP - 10)
-
+        self.HEIGHT = random.randrange(10, WINDOW_HEIGHT - self.GAP + 10)
         self.rectTop = pygame.Rect(WINDOW_LENGTH - 5, 0, self.WIDTH, self.HEIGHT)
         self.rectBottom = pygame.Rect(WINDOW_LENGTH - 5, 0 + self.HEIGHT + self.GAP, self.WIDTH, 480 - self.HEIGHT)
         self.mask = None
@@ -92,10 +91,10 @@ class Pipes(pygame.sprite.Sprite):
         return self.rectTop
     
     def getBottomRect(self):
-        return self.rectBottom
-
-
-
+        return self.rectBottom  
+    
+    def getWidth(self):
+        return self.WIDTH
 
 def main():
 
@@ -125,7 +124,8 @@ def main():
     clock = pygame.time.Clock()
     while True:
         clock.tick(60)
-
+        window.fill(COLOR)  
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -142,8 +142,6 @@ def main():
                         bird.jump()
                         cooldown = JUMP_COOLDOWN
         
-        window.fill(COLOR)  
-
         # pipe stuff
         # add pipe
         if len(obstacles) < 3 and game and pipe_cool <= 0:
@@ -154,14 +152,17 @@ def main():
         pipe_cool -= 1
 
         # iterate through all pipes
+        removePipe = []
+        indx = 0
         for pipe in obstacles:
             # check if out of bounds
-            if pipe.getXVal() < -55:
-                obstacles.remove(pipe)
+            if pipe.getXVal() < - pipe.getWidth():
+                removePipe.append(indx)
             # draw and move the pipe
             if game and jumping:
                 pipe.move()
-                pipe.draw(window)
+
+            pipe.draw(window)
 
             # check collision and make it so bird cant jump and pipes stop moving
             topRect = pipe.getTopRect()
@@ -170,8 +171,13 @@ def main():
 
             if birdRect.colliderect(bottomRect) or birdRect.colliderect(topRect):
                 jumping = False
+            indx += 1
 
-
+        # remove pipe
+        removed = 0
+        for indx in removePipe:
+            obstacles.pop(indx - removed)
+            removed += 1
 
         # bird stuff
 
@@ -186,13 +192,12 @@ def main():
             window.blit(text_surface, (WINDOW_LENGTH / 3, WINDOW_HEIGHT / 2.5))
             game = False
 
-        # pipe.draw(window)
-        bird.draw(window)
-
         # check if game has started conditions
         if game and bird.getYValue() < WINDOW_HEIGHT - 10:
             bird.fall()
 
+        # draw stuff
+        bird.draw(window)
         
         pygame.display.update()
 
