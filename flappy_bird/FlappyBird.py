@@ -4,6 +4,16 @@ import sys
 
 import random
 
+# settings
+
+COLOR = (255, 255, 255)
+WINDOW_HEIGHT = 480
+WINDOW_LENGTH = 780
+JUMP_COOLDOWN = 1
+
+
+
+
 class Bird(pygame.sprite.Sprite):
 
     # class variables
@@ -38,17 +48,40 @@ class Bird(pygame.sprite.Sprite):
         self.y_velocity = yVelo
     
 class Pipes(pygame.sprite.Sprite):
+    #global variables
+    global WINDOW_HEIGHT
+    global WINDOW_LENGTH
+    global WINDOW_LENGTH
+
+    #pipe settings
+    
+
     # class variables
     COLOR = (0, 225, 0)
-    GAP = 50
-    WIDTH = 30
+    GAP = 100
+    WIDTH = 50
+    HEIGHT = random.randrange(50, 590)
+    SPEED = 5
 
-    def __init__(self, x):
-        self.rect = pygame.Rect(x, 0, (x, 0, self.WIDTH, self.GAP))
+
+    def __init__(self):
+        self.rectTop = pygame.Rect(WINDOW_LENGTH - 5, 0, self.WIDTH, self.HEIGHT)
+        self.rectBottom = pygame.Rect(WINDOW_LENGTH - 5, 0 + self.HEIGHT + self.GAP, self.WIDTH, 480 - self.HEIGHT)
         self.mask = None
     
     def draw(self, window):
-        pygame.draw.rect(window, self.COLOR, self.rect)
+        pygame.draw.rect(window, self.COLOR, self.rectTop)
+        pygame.draw.rect(window, self.COLOR, self.rectBottom)
+    
+    def move(self):
+        self.rectTop.x -= self.SPEED
+        self.rectBottom.x -= self.SPEED
+    
+    def kill(self) -> None:
+        return super().kill()
+    
+    def getXVal(self):
+        return self.rectTop.x
 
 
 
@@ -58,17 +91,16 @@ class Pipes(pygame.sprite.Sprite):
 
 def main():
 
-    # settings
-
-    COLOR = (255, 255, 255)
-    WINDOW_HEIGHT = 480
-    WINDOW_LENGTH = 780
-    JUMP_COOLDOWN = 1
+    #settings
+    global WINDOW_HEIGHT
+    global WINDOW_LENGTH
+    global WINDOW_LENGTH
 
     # initalize variables
     cooldown = 0
     start = False
     game = True
+    obstacles = []
 
     pygame.init()
     pygame.font.init()
@@ -76,8 +108,7 @@ def main():
     pygame.display.set_caption("flappy bird")
 
     bird = Bird(50, 150)
-    #pipe = Pipes(400)
-
+    
     window = pygame.display.set_mode((WINDOW_LENGTH, WINDOW_HEIGHT))
 
 
@@ -105,12 +136,31 @@ def main():
         
         window.fill(COLOR)  
 
+        # pipe stuff
+        # add pipe
+        if len(obstacles) < 3:
+            print("here")
+            pipes = Pipes()
+            obstacles.append(pipes)
+
+        # iterate through all pipes
+        for pipe in obstacles:
+            # check if out of bounds
+            if pipe.getXVal() < 0:
+                pipe.kill()
+
+            # draw and move the pipe
+            pipe.move()
+            pipe.draw(window)
 
 
+        # bird stuff
+
+        # check if bird is valid
         if bird.getYValue() < -25:
             bird.setYValue(-25)
         
-        if bird.getYValue() > WINDOW_HEIGHT:
+        if bird.getYValue() > WINDOW_HEIGHT - 50:
             bird.setYValue(WINDOW_HEIGHT - 20)
             font = pygame.font.SysFont("Comic Sans MS", 50)
             text_surface = font.render('GAME OVER', False, (255, 0, 0))
@@ -118,9 +168,9 @@ def main():
 
         # pipe.draw(window)
         bird.draw(window)
-        # check game conditions
+
+        # check if game has started conditions
         if start and bird.getYValue() < WINDOW_HEIGHT - 50:
-            print("e")
             bird.fall()
 
         
