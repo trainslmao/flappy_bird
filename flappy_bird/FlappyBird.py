@@ -10,23 +10,21 @@ COLOR = (255, 255, 255)
 WINDOW_HEIGHT = 480
 WINDOW_LENGTH = 780
 JUMP_COOLDOWN = 1
-PIPE_COOLDOWN = 86
-
-
+PIPE_COOLDOWN = 90
 
 
 class Bird(pygame.sprite.Sprite):
 
     # class variables
-    COLOR = (0, 0, 0)
+    COLOR = (0, 255, 12)
     JUMP_HEIGHT = -5
-    SIZE = 50
+    SIZE = 20
     GRAVITY = 0.2
 
     def __init__(self, x, y):
         self.rect = pygame.Rect(x, y, self.SIZE, self.SIZE)
         self.y_velocity = 0
-        self.image = pygame.image.load("flappy_bird/images/flappybird.png")
+        #self.image = pygame.image.load("flappy_bird/images/flappybird.png")
         self.mask = None
     
     def jump(self):
@@ -37,7 +35,8 @@ class Bird(pygame.sprite.Sprite):
         self.y_velocity += self.GRAVITY
 
     def draw(self, window):
-        window.blit(self.image, (self.rect.x, self.rect.y))
+        #window.blit(self.image, (self.rect.x, self.rect.y))
+        pygame.draw.rect(window, self.COLOR, self.rect)
 
     def getYValue(self):
         return self.rect.y
@@ -47,6 +46,12 @@ class Bird(pygame.sprite.Sprite):
 
     def setYVelocity(self, yVelo):
         self.y_velocity = yVelo
+
+    def getRect(self):
+        return self.rect
+
+
+
     
 class Pipes(pygame.sprite.Sprite):
     #global variables
@@ -56,9 +61,8 @@ class Pipes(pygame.sprite.Sprite):
 
     #pipe settings
     
-
     # class variables
-    COLOR = (0, 225, 0)
+    COLOR = (0, 0, 0)
     GAP = 140
     WIDTH = 50
     HEIGHT = 0
@@ -80,11 +84,15 @@ class Pipes(pygame.sprite.Sprite):
         self.rectTop.x -= self.SPEED
         self.rectBottom.x -= self.SPEED
     
+    # getters
     def getXVal(self):
         return self.rectTop.x
-
-
-
+    
+    def getTopRect(self):
+        return self.rectTop
+    
+    def getBottomRect(self):
+        return self.rectBottom
 
 
 
@@ -103,6 +111,7 @@ def main():
     game = False
     obstacles = []
     pipe_cool = 0
+    jumping = True
 
     pygame.init()
     pygame.font.init()
@@ -113,9 +122,6 @@ def main():
     
     window = pygame.display.set_mode((WINDOW_LENGTH, WINDOW_HEIGHT))
 
-
-    
-
     clock = pygame.time.Clock()
     while True:
         clock.tick(60)
@@ -125,12 +131,11 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and jumping == True:
                 if event.key == pygame.K_SPACE and cooldown == 0:
                     if game == False:
                         bird.jump()
                         game = True
-                        print(game)
                         cooldown = JUMP_COOLDOWN
                     
                     else:
@@ -151,12 +156,21 @@ def main():
         # iterate through all pipes
         for pipe in obstacles:
             # check if out of bounds
-            if pipe.getXVal() < 0:
+            if pipe.getXVal() < -55:
                 obstacles.remove(pipe)
             # draw and move the pipe
-            if game:
+            if game and jumping:
                 pipe.move()
                 pipe.draw(window)
+
+            # check collision and make it so bird cant jump and pipes stop moving
+            topRect = pipe.getTopRect()
+            bottomRect = pipe.getBottomRect()
+            birdRect = bird.getRect()
+
+            if birdRect.colliderect(bottomRect) or birdRect.colliderect(topRect):
+                jumping = False
+
 
 
         # bird stuff
@@ -184,8 +198,6 @@ def main():
 
         if cooldown > 0 :
             cooldown -= 1
-
-
 
 if __name__ == "__main__":
 
