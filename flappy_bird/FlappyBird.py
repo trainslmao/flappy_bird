@@ -118,11 +118,14 @@ def main():
     jumping = True
     score = 0
     scoreFont = pygame.font.SysFont("Comic Sans MS", 20)
+    current_pipe = 0
+
+    BIRD_HEIGHT = 150
 
     pygame.display.set_caption("flappy bird")
 
     # create bird
-    bird = Bird(50, 150)
+    bird = Bird(50, BIRD_HEIGHT)
     
     # create window
     window = pygame.display.set_mode((WINDOW_LENGTH, WINDOW_HEIGHT))
@@ -138,23 +141,45 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-            if event.type == pygame.KEYDOWN and jumping == True:
-                if event.key == pygame.K_SPACE and cooldown == 0:
+            if event.type == pygame.KEYDOWN:
+                # jump
+                if event.key == pygame.K_SPACE and cooldown == 0 and jumping == True:
                     if game == False:
                         bird.jump()
                         game = True
                         cooldown = JUMP_COOLDOWN
+
+                        # add first pipe
+                        pipes = Pipes()
+                        obstacles.append(pipes)
                     
                     else:
                         bird.jump()
                         cooldown = JUMP_COOLDOWN
+                
+                # restart
+                if event.key == pygame.K_r:
+                    print("here")
+                    jumping = True
+                    bird.setYValue(BIRD_HEIGHT)
+                    score = 0
+
+                    for i in range(0, len(obstacles)):
+                        obstacles.pop()
+
+
         
         # pipe stuff
         # add pipe
-        if len(obstacles) < 3 and game and pipe_cool <= 0:
+        
+
+        if len(obstacles) < 3 and game and obstacles[current_pipe].getXVal() <= (int) (WINDOW_LENGTH / 3):
             pipes = Pipes()
             obstacles.append(pipes)
             pipe_cool = PIPE_COOLDOWN
+
+            if current_pipe < 3:
+                current_pipe += 1
 
         pipe_cool -= 1
 
@@ -198,6 +223,7 @@ def main():
             gameOverFont = pygame.font.SysFont("Comic Sans MS", 50)
             text_surface = gameOverFont.render('GAME OVER', False, (255, 0, 0))
             window.blit(text_surface, (WINDOW_LENGTH / 3, WINDOW_HEIGHT / 2.5))
+            jumping = False
             game = False
 
         # check if game has started conditions
