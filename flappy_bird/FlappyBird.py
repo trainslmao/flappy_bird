@@ -10,7 +10,7 @@ COLOR = (255, 255, 255)
 WINDOW_HEIGHT = 480
 WINDOW_LENGTH = 780
 JUMP_COOLDOWN = 1
-PIPE_COOLDOWN = 90
+PIPE_SPEED = 3
 
 
 class Bird(pygame.sprite.Sprite):
@@ -58,6 +58,7 @@ class Pipes(pygame.sprite.Sprite):
     global WINDOW_HEIGHT
     global WINDOW_LENGTH
     global WINDOW_LENGTH
+    global PIPE_SPEED
 
     #pipe settings
     
@@ -66,7 +67,6 @@ class Pipes(pygame.sprite.Sprite):
     GAP = 140
     WIDTH = 50
     HEIGHT = 0
-    SPEED = 3
 
 
     def __init__(self):
@@ -80,8 +80,8 @@ class Pipes(pygame.sprite.Sprite):
         pygame.draw.rect(window, self.COLOR, self.rectBottom)
     
     def move(self):
-        self.rectTop.x -= self.SPEED
-        self.rectBottom.x -= self.SPEED
+        self.rectTop.x -= PIPE_SPEED
+        self.rectBottom.x -= PIPE_SPEED
     
     # getters
     def getXVal(self):
@@ -102,13 +102,17 @@ def main():
     global WINDOW_HEIGHT
     global WINDOW_LENGTH
     global WINDOW_LENGTH
-    global PIPE_COOLDOWN
     global JUMP_COOLDOWN
+    global PIPE_SPEED
 
     # initalize pygame stuff
     pygame.init()
     pygame.font.init()
     clock = pygame.time.Clock()
+
+    # settings
+    BIRD_HEIGHT = 150
+    PIPE_COOLDOWN = (int) (WINDOW_LENGTH / 9)
 
     # initalize variables
     cooldown = 0
@@ -118,9 +122,8 @@ def main():
     jumping = True
     score = 0
     scoreFont = pygame.font.SysFont("Comic Sans MS", 20)
-    current_pipe = 0
+    
 
-    BIRD_HEIGHT = 150
 
     pygame.display.set_caption("flappy bird")
 
@@ -148,10 +151,6 @@ def main():
                         bird.jump()
                         game = True
                         cooldown = JUMP_COOLDOWN
-
-                        # add first pipe
-                        pipes = Pipes()
-                        obstacles.append(pipes)
                     
                     else:
                         bird.jump()
@@ -171,15 +170,10 @@ def main():
         
         # pipe stuff
         # add pipe
-        
-
-        if len(obstacles) < 3 and game and obstacles[current_pipe].getXVal() <= (int) (WINDOW_LENGTH / 3):
+        if len(obstacles) < 4 and game and pipe_cool <= 0:
             pipes = Pipes()
             obstacles.append(pipes)
             pipe_cool = PIPE_COOLDOWN
-
-            if current_pipe < 3:
-                current_pipe += 1
 
         pipe_cool -= 1
 
