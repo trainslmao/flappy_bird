@@ -158,7 +158,6 @@ def main():
                 
                 # restart
                 if event.key == pygame.K_r:
-                    print("here")
                     jumping = True
                     bird.setYValue(BIRD_HEIGHT)
                     score = 0
